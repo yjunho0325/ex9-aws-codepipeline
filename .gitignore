@@ -33,10 +33,13 @@ dist/
 *.tfstate
 *.tfstate.*
 crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
 *.tfvars
 !*.tfvars.example
 .terraform.lock.hcl
 
 # === 기타 ===
 .aws/             # Git 버전 관리
-infra
