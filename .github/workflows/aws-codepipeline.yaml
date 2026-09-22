@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: action/checkout@v4
+      uses: actions/checkout@v4
     
     # 1. AWS 자격 증명 설정 (ECR 로그인 전에 수행)
     - name: Configure AWS credentials
