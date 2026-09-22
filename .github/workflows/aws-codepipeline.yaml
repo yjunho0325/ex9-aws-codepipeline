@@ -4,7 +4,9 @@ on:
     branches: [main]
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
-  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  # ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  ECR_REPOSITORY_WEB: "nginx"
+  ECR_REPOSITORY_APP: "fastapi"
   S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
   CODE_DEPLOY_APP_NAME: ${{ secrets.CODE_DEPLOY_APP_NAME }}
   CODE_DEPLOY_GROUP_APP_NAME: ${{ secrets.CODE_DEPLOY_GROUP_APP_NAME }}
@@ -36,11 +38,19 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
       run: |
         # docker build의 마지막 마침표(.)는 context경로를 의미
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-                     -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
-                     -f ./nginx/Dockerfile ./nginx
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        # Nginx 빌드 및 푸시
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_WEB:$IMAGE_TAG \
+                     -t $ECR_REGISTRY/$ECR_REPOSITORY_WEB:latest \
+                     ./nginx
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_WEB:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_WEB:latest
+
+        # FastAPI 빌드 및 푸시
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_APP:$IMAGE_TAG \
+                     -t $ECR_REGISTRY/$ECR_REPOSITORY_APP:latest \
+                     ./fastapi
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_APP:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_APP:latest
 
     # 4. (중요)Zip 압축 단계 전에 chmod +x 추가
     - name: Grant execute permission for scripts
@@ -50,7 +60,8 @@ jobs:
     - name: Create CodeDeploy Bundle
       run: |
         mkdir -p build
-        zip -r build/bundle.zip appspec.yml scripts/
+        # zip -r build/bundle.zip appspec.yml scripts/
+        zip -r build/bundle.zip appspec.yml docker-compose.yaml scripts/
 
     # 6. 배포 번들 S3 업로드
     - name: Upload bundle to S3
