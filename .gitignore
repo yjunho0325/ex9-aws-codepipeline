@@ -39,3 +39,4 @@ crash.log
 
 # === 기타 ===
 .aws/             # Git 버전 관리
+infra
